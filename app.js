@@ -1,0 +1,419 @@
+'use strict';
+
+/* ============================================================
+   Milestones — a personal date tracker (PWA, no backend)
+   Data lives in localStorage on the device.
+============================================================ */
+
+const STORE_KEY = 'milestones.v1';
+
+/* SF-Symbol-style glyphs (use currentColor; badge sets color to white) */
+const ICONS = {
+  baby: '<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3.6h6M8.4 6.6h7.2l-.7 3H9.1z"/><path d="M9 9.6h6v8.6a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z"/><path d="M10.6 12.4h2.8M10.6 15h2.8"/></g>',
+  anniversary: '<path fill="currentColor" d="M12 21s-7.4-4.6-9.7-9C.6 8.3 2.6 4.5 6.4 4.5c2 0 3.3 1.1 4.6 2.8 1.3-1.7 2.6-2.8 4.6-2.8 3.8 0 5.8 3.8 4.1 7.5C17.4 16.4 12 21 12 21z"/>',
+  cat: '<g fill="currentColor"><ellipse cx="7" cy="10" rx="1.7" ry="2.2"/><ellipse cx="12" cy="8" rx="1.8" ry="2.4"/><ellipse cx="17" cy="10" rx="1.7" ry="2.2"/><path d="M12 12c-2.6 0-4.7 2-4.7 4.3 0 1.7 1.4 2.6 2.8 2.6.9 0 1.3-.4 1.9-.4s1 .4 1.9.4c1.4 0 2.8-.9 2.8-2.6C16.7 14 14.6 12 12 12z"/></g>',
+  family: '<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.6 19c0-3 2.4-5 5.4-5s5.4 2 5.4 5"/><circle cx="16.6" cy="8.6" r="2.3"/><path d="M15.2 14.1c2.6-.4 5.2 1.5 5.2 4.9"/></g>',
+  other: '<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="15" rx="3.2"/><path d="M4 9.6h16M8 3.6v3.8M16 3.6v3.8"/></g><g fill="currentColor"><circle cx="8.5" cy="13.5" r="1"/><circle cx="12" cy="13.5" r="1"/><circle cx="15.5" cy="13.5" r="1"/></g>',
+};
+
+const CATEGORIES = [
+  { id: 'baby',        label: 'Baby',        accent: 'var(--c-baby)',        defaultMode: 'age' },
+  { id: 'anniversary', label: 'Anniversary', accent: 'var(--c-anniversary)', defaultMode: 'anniversary' },
+  { id: 'cat',         label: 'Pet health',  accent: 'var(--c-cat)',         defaultMode: 'recurring' },
+  { id: 'family',      label: 'Family',      accent: 'var(--c-family)',      defaultMode: 'age' },
+  { id: 'other',       label: 'Other',       accent: 'var(--c-other)',       defaultMode: 'countdown' },
+];
+
+const MODES = [
+  { id: 'age',         label: 'Exact age',     hint: 'Years, months and days since a birth date — plus a countdown to the next birthday.' },
+  { id: 'anniversary', label: 'Anniversary',   hint: 'How many years since the date, and how long until the next anniversary.' },
+  { id: 'recurring',   label: 'Recurring due', hint: 'Track when it was last done and how often it repeats. Shows when the next one is due.' },
+  { id: 'countdown',   label: 'Countdown',     hint: 'A one-off date in the future — counts down the days.' },
+  { id: 'elapsed',     label: 'Time since',    hint: 'A one-off date in the past — counts how long ago it was.' },
+];
+
+const catById = id => CATEGORIES.find(c => c.id === id) || CATEGORIES[4];
+const iconFor = id => ICONS[id] || ICONS.other;
+
+/* ---------------- Date helpers (local, calendar-aware) ---------------- */
+
+const DAY = 86400000;
+
+function today() {
+  const n = new Date();
+  return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+}
+
+function parseDate(str) {
+  if (!str) return null;
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function daysInMonth(year, monthIndex) {
+  return new Date(year, monthIndex + 1, 0).getDate();
+}
+
+function diffYMD(from, to) {
+  let years = to.getFullYear() - from.getFullYear();
+  let months = to.getMonth() - from.getMonth();
+  let days = to.getDate() - from.getDate();
+  if (days < 0) {
+    months -= 1;
+    days += daysInMonth(to.getFullYear(), to.getMonth() - 1);
+  }
+  if (months < 0) { years -= 1; months += 12; }
+  return { years, months, days };
+}
+
+function daysBetween(a, b) { return Math.round((b - a) / DAY); }
+
+function addInterval(date, num, unit) {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  if (unit === 'days')  { d.setDate(d.getDate() + num); return d; }
+  if (unit === 'weeks') { d.setDate(d.getDate() + num * 7); return d; }
+  const monthsToAdd = unit === 'years' ? num * 12 : num;
+  const targetMonth = d.getMonth() + monthsToAdd;
+  const targetYear = d.getFullYear() + Math.floor(targetMonth / 12);
+  const normMonth = ((targetMonth % 12) + 12) % 12;
+  const clampedDay = Math.min(d.getDate(), daysInMonth(targetYear, normMonth));
+  return new Date(targetYear, normMonth, clampedDay);
+}
+
+function nextAnnual(anchor) {
+  const t = today();
+  const make = y => new Date(y, anchor.getMonth(), Math.min(anchor.getDate(), daysInMonth(y, anchor.getMonth())));
+  let occ = make(t.getFullYear());
+  if (occ < t) occ = make(t.getFullYear() + 1);
+  return occ;
+}
+
+/* ---------------- Formatting ---------------- */
+
+const fmtDate = d => d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+
+function fmtYMD({ years, months, days }, max = 3) {
+  const parts = [];
+  if (years) parts.push(years + 'y');
+  if (months) parts.push(months + 'mo');
+  if (days) parts.push(days + 'd');
+  if (!parts.length) return 'today';
+  return parts.slice(0, max).join(' ');
+}
+
+function fmtSpan(from, to) {
+  const d = daysBetween(from, to);
+  if (d === 0) return 'today';
+  if (Math.abs(d) < 31) return Math.abs(d) + (Math.abs(d) === 1 ? ' day' : ' days');
+  const ymd = to >= from ? diffYMD(from, to) : diffYMD(to, from);
+  return fmtYMD(ymd, 2);
+}
+
+/* ---------------- Compute display model ---------------- */
+
+function computeView(entry) {
+  const cat = catById(entry.category);
+  const anchor = parseDate(entry.date);
+  const t = today();
+  const view = {
+    accent: cat.accent, icon: iconFor(entry.category), title: entry.title,
+    sub: '', valueMain: '', valueLabel: '', state: 'normal', sortKey: Infinity,
+  };
+  if (!anchor) { view.valueMain = '—'; return view; }
+
+  switch (entry.mode) {
+    case 'age': {
+      const next = nextAnnual(anchor);
+      const untilBday = daysBetween(t, next);
+      view.valueMain = fmtYMD(diffYMD(anchor, t), 3);
+      view.valueLabel = 'old';
+      view.sub = `Born ${fmtDate(anchor)} · 🎂 ${untilBday === 0 ? 'today!' : 'in ' + fmtSpan(t, next)}`;
+      view.sortKey = untilBday;
+      if (untilBday <= 14) view.state = 'soon';
+      break;
+    }
+    case 'anniversary': {
+      const next = nextAnnual(anchor);
+      const until = daysBetween(t, next);
+      const yrs = diffYMD(anchor, t).years;
+      view.valueMain = yrs + (yrs === 1 ? ' yr' : ' yrs');
+      view.valueLabel = 'so far';
+      view.sub = `${fmtDate(anchor)} · next ${until === 0 ? 'today!' : 'in ' + fmtSpan(t, next)}`;
+      view.sortKey = until;
+      if (until <= 14) view.state = 'soon';
+      break;
+    }
+    case 'recurring': {
+      const num = Math.max(1, Number(entry.intervalNum) || 1);
+      const unit = entry.intervalUnit || 'months';
+      const due = addInterval(anchor, num, unit);
+      const untilDue = daysBetween(t, due);
+      view.sortKey = untilDue;
+      view.sub = `Last ${fmtDate(anchor)} · every ${num} ${num === 1 ? unit.slice(0, -1) : unit} · next ${fmtDate(due)}`;
+      if (untilDue < 0) { view.state = 'due'; view.valueMain = fmtSpan(due, t) + ' late'; view.valueLabel = 'overdue'; }
+      else if (untilDue === 0) { view.state = 'due'; view.valueMain = 'today'; view.valueLabel = 'due now'; }
+      else { if (untilDue <= 14) view.state = 'soon'; view.valueMain = 'in ' + fmtSpan(t, due); view.valueLabel = 'next due'; }
+      break;
+    }
+    case 'countdown': {
+      const until = daysBetween(t, anchor);
+      view.sortKey = until;
+      view.sub = fmtDate(anchor);
+      if (until < 0) { view.valueMain = fmtSpan(anchor, t) + ' ago'; view.valueLabel = 'passed'; }
+      else if (until === 0) { view.state = 'due'; view.valueMain = 'today'; view.valueLabel = "it's here"; }
+      else { if (until <= 14) view.state = 'soon'; view.valueMain = 'in ' + fmtSpan(t, anchor); view.valueLabel = 'to go'; }
+      break;
+    }
+    case 'elapsed':
+    default: {
+      const since = daysBetween(anchor, t);
+      view.sortKey = -since;
+      view.sub = fmtDate(anchor);
+      view.valueMain = since <= 0 ? 'today' : fmtSpan(anchor, t);
+      view.valueLabel = 'ago';
+      break;
+    }
+  }
+  return view;
+}
+
+/* ---------------- Storage ---------------- */
+
+function load() {
+  try { const raw = localStorage.getItem(STORE_KEY); return raw ? JSON.parse(raw) : []; }
+  catch { return []; }
+}
+function save(items) { localStorage.setItem(STORE_KEY, JSON.stringify(items)); }
+
+let state = { items: load(), filter: 'all', editingId: null, draft: null };
+
+/* ---------------- Rendering ---------------- */
+
+const $ = sel => document.querySelector(sel);
+const listEl = $('#list');
+const emptyEl = $('#empty');
+const filtersEl = $('#filters');
+
+function renderToday() {
+  $('#todayLabel').textContent = today().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
+function renderFilters() {
+  const cats = [{ id: 'all', label: 'All' }, ...CATEGORIES];
+  filtersEl.innerHTML = '';
+  cats.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'seg';
+    btn.textContent = c.label;
+    btn.setAttribute('aria-pressed', String(state.filter === c.id));
+    btn.addEventListener('click', () => { state.filter = c.id; render(); });
+    filtersEl.appendChild(btn);
+  });
+}
+
+function render() {
+  renderFilters();
+  const items = state.items
+    .filter(it => state.filter === 'all' || it.category === state.filter)
+    .map(it => ({ it, view: computeView(it) }))
+    .sort((a, b) => a.view.sortKey - b.view.sortKey);
+
+  listEl.innerHTML = '';
+  emptyEl.hidden = state.items.length > 0;
+
+  items.forEach(({ it, view }) => {
+    const card = document.createElement('button');
+    card.className = 'card';
+    card.type = 'button';
+    card.style.setProperty('--accent', view.accent);
+    card.setAttribute('aria-label', `Edit ${view.title}`);
+
+    const valClass = view.state === 'due' ? ' card__value--due' : view.state === 'soon' ? ' card__value--soon' : '';
+    const badge = view.state === 'due' ? '<span class="badge badge--due">Due</span>'
+                : view.state === 'soon' ? '<span class="badge badge--soon">Soon</span>' : '';
+
+    card.innerHTML = `
+      <span class="icon-badge"><svg viewBox="0 0 24 24">${view.icon}</svg></span>
+      <span class="card__body">
+        <span class="card__title">${escapeHtml(view.title)}</span>
+        <span class="card__sub">${escapeHtml(view.sub)}</span>
+      </span>
+      <span class="card__trail">
+        ${badge}
+        <span class="card__value${valClass}">
+          <span class="card__value-main">${escapeHtml(view.valueMain)}</span>
+          <span class="card__value-label">${escapeHtml(view.valueLabel)}</span>
+        </span>
+        <span class="chevron"><svg viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></span>
+      </span>`;
+    card.addEventListener('click', () => openSheet(it.id));
+    listEl.appendChild(card);
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+/* ---------------- Add / Edit sheet ---------------- */
+
+const sheet = $('#sheet');
+const scrim = $('#scrim');
+
+function buildChips(container, options, current, onPick, kind) {
+  container.innerHTML = '';
+  options.forEach(o => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chip';
+    btn.setAttribute('role', 'radio');
+    btn.setAttribute('aria-checked', String(o.id === current));
+    if (kind === 'category') {
+      btn.style.setProperty('--accent', o.accent);
+      btn.innerHTML = `<span class="chip__dot"><svg viewBox="0 0 24 24">${iconFor(o.id)}</svg></span><span>${o.label}</span>`;
+    } else {
+      btn.style.setProperty('--accent', catById(state.draft.category).accent);
+      btn.textContent = o.label;
+    }
+    btn.addEventListener('click', () => onPick(o.id));
+    container.appendChild(btn);
+  });
+}
+
+function syncModeUI() {
+  const mode = state.draft.mode;
+  const meta = MODES.find(m => m.id === mode);
+  $('#modeHint').textContent = meta ? meta.hint : '';
+  $('#intervalRow').hidden = mode !== 'recurring';
+  const labels = { age: 'Birth date', anniversary: 'The date', recurring: 'Last done on', countdown: 'The date', elapsed: 'The date' };
+  $('#dateLabel').textContent = labels[mode] || 'Date';
+}
+
+function openSheet(id) {
+  const editing = id ? state.items.find(i => i.id === id) : null;
+  state.editingId = editing ? id : null;
+
+  if (editing) {
+    state.draft = { category: editing.category, mode: editing.mode };
+    $('#sheetTitle').textContent = 'Edit Milestone';
+    $('#saveBtn').textContent = 'Save';
+    $('#fTitle').value = editing.title;
+    $('#fDate').value = editing.date;
+    $('#fNotes').value = editing.notes || '';
+    $('#fIntervalNum').value = editing.intervalNum || 6;
+    $('#fIntervalUnit').value = editing.intervalUnit || 'months';
+    $('#deleteGroup').hidden = false;
+  } else {
+    const defCat = 'baby';
+    state.draft = { category: defCat, mode: catById(defCat).defaultMode };
+    $('#sheetTitle').textContent = 'New Milestone';
+    $('#saveBtn').textContent = 'Add';
+    $('#form').reset();
+    $('#fIntervalNum').value = 6;
+    $('#fIntervalUnit').value = 'months';
+    $('#deleteGroup').hidden = true;
+  }
+
+  buildChips($('#categoryChips'), CATEGORIES, state.draft.category, pickCategory, 'category');
+  buildChips($('#modeChips'), MODES, state.draft.mode, pickMode, 'mode');
+  syncModeUI();
+
+  scrim.hidden = false;
+  sheet.hidden = false;
+  document.body.style.overflow = 'hidden';
+  if (!editing) setTimeout(() => $('#fTitle').focus(), 350);
+}
+
+function closeSheet() {
+  sheet.hidden = true;
+  scrim.hidden = true;
+  document.body.style.overflow = '';
+  state.editingId = null;
+}
+
+function pickCategory(catId) {
+  const prevDefault = catById(state.draft.category).defaultMode;
+  state.draft.category = catId;
+  if (state.draft.mode === prevDefault) state.draft.mode = catById(catId).defaultMode;
+  buildChips($('#categoryChips'), CATEGORIES, state.draft.category, pickCategory, 'category');
+  buildChips($('#modeChips'), MODES, state.draft.mode, pickMode, 'mode');
+  syncModeUI();
+}
+
+function pickMode(modeId) {
+  state.draft.mode = modeId;
+  buildChips($('#modeChips'), MODES, state.draft.mode, pickMode, 'mode');
+  syncModeUI();
+}
+
+function saveDraft() {
+  const title = $('#fTitle').value.trim();
+  const date = $('#fDate').value;
+  if (!title) { $('#fTitle').focus(); return; }
+  if (!date) { $('#fDate').focus(); return; }
+
+  const base = {
+    title, date,
+    category: state.draft.category,
+    mode: state.draft.mode,
+    notes: $('#fNotes').value.trim(),
+    intervalNum: Math.max(1, Number($('#fIntervalNum').value) || 1),
+    intervalUnit: $('#fIntervalUnit').value,
+  };
+
+  if (state.editingId) {
+    const idx = state.items.findIndex(i => i.id === state.editingId);
+    if (idx > -1) state.items[idx] = { ...state.items[idx], ...base };
+  } else {
+    state.items.push({ id: 'm_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), createdAt: Date.now(), ...base });
+  }
+  save(state.items);
+  closeSheet();
+  render();
+}
+
+function deleteDraft() {
+  if (!state.editingId) return;
+  if (!confirm('Delete this milestone? This cannot be undone.')) return;
+  state.items = state.items.filter(i => i.id !== state.editingId);
+  save(state.items);
+  closeSheet();
+  render();
+}
+
+/* ---------------- Wiring ---------------- */
+
+$('#addBtn').addEventListener('click', () => openSheet());
+$('#cancelBtn').addEventListener('click', closeSheet);
+$('#saveBtn').addEventListener('click', saveDraft);
+$('#deleteBtn').addEventListener('click', deleteDraft);
+scrim.addEventListener('click', closeSheet);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sheet.hidden) closeSheet(); });
+
+// Collapsing large-title nav
+const topbar = $('#topbar');
+const onScroll = () => topbar.classList.toggle('is-scrolled', window.scrollY > 46);
+window.addEventListener('scroll', onScroll, { passive: true });
+onScroll();
+
+function seedIfFirstRun() {
+  if (localStorage.getItem(STORE_KEY) !== null) return;
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const t = today();
+  const sample = [
+    { title: 'Our Wedding', category: 'anniversary', mode: 'anniversary', date: '2018-02-12', notes: '', intervalNum: 1, intervalUnit: 'years' },
+    { title: 'Cat’s Deworming', category: 'cat', mode: 'recurring', date: iso(addInterval(t, -5, 'months')), notes: 'Vet: Dr. Rao', intervalNum: 6, intervalUnit: 'months' },
+  ];
+  state.items = sample.map((s, i) => ({ id: 'seed_' + i, createdAt: Date.now() + i, ...s }));
+  save(state.items);
+}
+
+seedIfFirstRun();
+renderToday();
+render();
+
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderToday(); render(); } });
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js').catch(() => {}));
+}

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#131f24" media="(prefers-color-scheme: dark)" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Milestones" />
+  <title>Milestones</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Collapsing large-title navigation -->
+  <div class="topbar" id="topbar">
+    <div class="topbar__inner">
+      <span class="topbar__title" id="compactTitle">Milestones</span>
+    </div>
+  </div>
+
+  <main id="app">
+    <header class="hero">
+      <h1 class="hero__title">Milestones</h1>
+      <p class="hero__sub" id="todayLabel"></p>
+    </header>
+
+    <nav class="segments" id="filters" aria-label="Filter by category"></nav>
+
+    <section class="list" id="list"></section>
+
+    <div class="empty" id="empty" hidden>
+      <div class="empty__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M7 3v3M17 3v3M4 8h16M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"/></svg>
+      </div>
+      <h2>No Milestones Yet</h2>
+      <p>Add your baby’s birthday, your anniversary, or the cat’s next deworming — anything worth remembering.</p>
+    </div>
+  </main>
+
+  <button class="compose" id="addBtn" aria-label="New milestone">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+  <!-- Add / Edit sheet -->
+  <div class="scrim" id="scrim" hidden></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+    <div class="sheet__grabber"></div>
+    <header class="sheet__nav">
+      <button class="linkbtn" id="cancelBtn" type="button">Cancel</button>
+      <h2 class="sheet__title" id="sheetTitle">New Milestone</h2>
+      <button class="linkbtn linkbtn--bold" id="saveBtn" type="button">Add</button>
+    </header>
+
+    <form class="form" id="form" novalidate>
+      <div class="group">
+        <div class="row">
+          <input class="row__input" id="fTitle" type="text" placeholder="Title" maxlength="60" required />
+        </div>
+      </div>
+
+      <p class="group__header">Category</p>
+      <div class="picker" id="categoryChips" role="radiogroup" aria-label="Category"></div>
+
+      <p class="group__header">Track</p>
+      <div class="picker picker--stack" id="modeChips" role="radiogroup" aria-label="Tracking mode"></div>
+      <p class="group__footer" id="modeHint"></p>
+
+      <div class="group" id="dateGroup">
+        <div class="row">
+          <span class="row__label" id="dateLabel">Date</span>
+          <input class="row__control" id="fDate" type="date" required />
+        </div>
+        <div class="row" id="intervalRow" hidden>
+          <span class="row__label">Repeats every</span>
+          <div class="stepper">
+            <input class="stepper__num" id="fIntervalNum" type="number" min="1" max="999" inputmode="numeric" value="6" />
+            <select class="stepper__unit" id="fIntervalUnit">
+              <option value="days">days</option>
+              <option value="weeks">weeks</option>
+              <option value="months" selected>months</option>
+              <option value="years">years</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <p class="group__header">Notes</p>
+      <div class="group">
+        <div class="row row--textarea">
+          <textarea class="row__input" id="fNotes" rows="3" placeholder="Vet name, brand, reminders…" maxlength="200"></textarea>
+        </div>
+      </div>
+
+      <div class="group" id="deleteGroup" hidden>
+        <button class="row row--action" id="deleteBtn" type="button">Delete Milestone</button>
+      </div>
+    </form>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
