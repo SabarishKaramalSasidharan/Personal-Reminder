@@ -185,7 +185,7 @@ function load() {
 }
 function save(items) { localStorage.setItem(STORE_KEY, JSON.stringify(items)); }
 
-let state = { items: load(), filter: 'all', editingId: null, draft: null };
+let state = { items: load(), filter: 'all', view: 'home', editingId: null, draft: null };
 
 /* ---------------- Rendering ---------------- */
 
@@ -194,10 +194,111 @@ const listEl = $('#list');
 const emptyEl = $('#empty');
 const filtersEl = $('#filters');
 
-function renderToday() {
-  $('#todayLabel').textContent = today().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+const HERO = {
+  home: { title: 'Milestones', sub: () => today().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }) },
+  list: { title: 'All', sub: () => { const n = state.items.length; return `${n} ${n === 1 ? 'milestone' : 'milestones'} tracked`; } },
+};
+
+function renderHero() {
+  const h = HERO[state.view];
+  $('#heroTitle').textContent = h.title;
+  $('#heroSub').textContent = h.sub();
+  $('#compactTitle').textContent = h.title;
 }
 
+/* Build a card button element from an entry + its computed view */
+function makeCard(it, view) {
+  const card = document.createElement('button');
+  card.className = 'card';
+  card.type = 'button';
+  card.style.setProperty('--accent', view.accent);
+  card.setAttribute('aria-label', `Edit ${view.title}`);
+
+  const valClass = view.state === 'due' ? ' card__value--due' : view.state === 'soon' ? ' card__value--soon' : '';
+  const badge = view.state === 'due' ? '<span class="badge badge--due">Due</span>'
+              : view.state === 'soon' ? '<span class="badge badge--soon">Soon</span>' : '';
+
+  card.innerHTML = `
+    <span class="icon-badge"><svg viewBox="0 0 24 24">${view.icon}</svg></span>
+    <span class="card__body">
+      <span class="card__title">${escapeHtml(view.title)}</span>
+      <span class="card__sub">${escapeHtml(view.sub)}</span>
+    </span>
+    <span class="card__trail">
+      ${badge}
+      <span class="card__value${valClass}">
+        <span class="card__value-main">${escapeHtml(view.valueMain)}</span>
+        <span class="card__value-label">${escapeHtml(view.valueLabel)}</span>
+      </span>
+      <span class="chevron"><svg viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></span>
+    </span>`;
+  card.addEventListener('click', () => openSheet(it.id));
+  return card;
+}
+
+/* ---- Dashboard (home) ---- */
+function renderHome() {
+  const withViews = state.items
+    .map(it => ({ it, view: computeView(it) }))
+    .sort((a, b) => a.view.sortKey - b.view.sortKey);
+
+  const hasAny = withViews.length > 0;
+  $('#homeEmpty').hidden = hasAny;
+  $('#overviewSection').hidden = !hasAny;
+
+  // Needs attention: overdue + due-soon
+  const attention = withViews.filter(x => x.view.state === 'due' || x.view.state === 'soon');
+  const attentionIds = new Set(attention.map(x => x.it.id));
+  const attSection = $('#attentionSection');
+  const attList = $('#attentionList');
+  attList.innerHTML = '';
+  attSection.hidden = attention.length === 0;
+  attention.forEach(({ it, view }) => attList.appendChild(makeCard(it, view)));
+
+  // Up next: soonest upcoming not already flagged (positive, finite countdown)
+  const upnext = withViews
+    .filter(x => !attentionIds.has(x.it.id) && isFinite(x.view.sortKey) && x.view.sortKey >= 0)
+    .slice(0, 3);
+  const upSection = $('#upnextSection');
+  const upList = $('#upnextList');
+  upList.innerHTML = '';
+  upSection.hidden = upnext.length === 0;
+  upnext.forEach(({ it, view }) => upList.appendChild(makeCard(it, view)));
+
+  renderStats(withViews);
+}
+
+function statTile(num, label, accent) {
+  const el = document.createElement('div');
+  el.className = 'stat';
+  if (accent) el.style.setProperty('--stat-accent', accent);
+  el.innerHTML = `<div class="stat__num">${escapeHtml(num)}</div><div class="stat__label">${escapeHtml(label)}</div>`;
+  return el;
+}
+
+function renderStats(withViews) {
+  const row = $('#statsRow');
+  row.innerHTML = '';
+  const t = today();
+
+  // Total tracked
+  row.appendChild(statTile(String(state.items.length), 'Tracked'));
+
+  // Featured: first baby age
+  const baby = state.items.find(i => i.mode === 'age' && parseDate(i.date));
+  if (baby) {
+    row.appendChild(statTile(fmtYMD(diffYMD(parseDate(baby.date), t), 2), baby.title, catById(baby.category).accent));
+  }
+
+  // Featured: first anniversary (years)
+  const anniv = state.items.find(i => i.mode === 'anniversary' && parseDate(i.date));
+  if (anniv) {
+    const yrs = diffYMD(parseDate(anniv.date), t).years;
+    row.appendChild(statTile(`${yrs} ${yrs === 1 ? 'yr' : 'yrs'}`, anniv.title, catById(anniv.category).accent));
+  }
+}
+
+/* ---- All (list) ---- */
 function renderFilters() {
   const cats = [{ id: 'all', label: 'All' }, ...CATEGORIES];
   filtersEl.innerHTML = '';
@@ -206,12 +307,12 @@ function renderFilters() {
     btn.className = 'seg';
     btn.textContent = c.label;
     btn.setAttribute('aria-pressed', String(state.filter === c.id));
-    btn.addEventListener('click', () => { state.filter = c.id; render(); });
+    btn.addEventListener('click', () => { state.filter = c.id; renderList(); });
     filtersEl.appendChild(btn);
   });
 }
 
-function render() {
+function renderList() {
   renderFilters();
   const items = state.items
     .filter(it => state.filter === 'all' || it.category === state.filter)
@@ -220,35 +321,27 @@ function render() {
 
   listEl.innerHTML = '';
   emptyEl.hidden = state.items.length > 0;
+  items.forEach(({ it, view }) => listEl.appendChild(makeCard(it, view)));
+}
 
-  items.forEach(({ it, view }) => {
-    const card = document.createElement('button');
-    card.className = 'card';
-    card.type = 'button';
-    card.style.setProperty('--accent', view.accent);
-    card.setAttribute('aria-label', `Edit ${view.title}`);
+/* Re-render whichever views are present + the hero */
+function render() {
+  renderHero();
+  renderHome();
+  renderList();
+}
 
-    const valClass = view.state === 'due' ? ' card__value--due' : view.state === 'soon' ? ' card__value--soon' : '';
-    const badge = view.state === 'due' ? '<span class="badge badge--due">Due</span>'
-                : view.state === 'soon' ? '<span class="badge badge--soon">Soon</span>' : '';
-
-    card.innerHTML = `
-      <span class="icon-badge"><svg viewBox="0 0 24 24">${view.icon}</svg></span>
-      <span class="card__body">
-        <span class="card__title">${escapeHtml(view.title)}</span>
-        <span class="card__sub">${escapeHtml(view.sub)}</span>
-      </span>
-      <span class="card__trail">
-        ${badge}
-        <span class="card__value${valClass}">
-          <span class="card__value-main">${escapeHtml(view.valueMain)}</span>
-          <span class="card__value-label">${escapeHtml(view.valueLabel)}</span>
-        </span>
-        <span class="chevron"><svg viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></span>
-      </span>`;
-    card.addEventListener('click', () => openSheet(it.id));
-    listEl.appendChild(card);
-  });
+function setTab(view) {
+  state.view = view;
+  $('#view-home').hidden = view !== 'home';
+  $('#view-list').hidden = view !== 'list';
+  $('#tabHome').classList.toggle('is-active', view === 'home');
+  $('#tabList').classList.toggle('is-active', view === 'list');
+  $('#tabHome').setAttribute('aria-current', view === 'home' ? 'page' : 'false');
+  $('#tabList').setAttribute('aria-current', view === 'list' ? 'page' : 'false');
+  renderHero();
+  window.scrollTo(0, 0);
+  topbar.classList.remove('is-scrolled');
 }
 
 function escapeHtml(s) {
@@ -390,6 +483,10 @@ $('#deleteBtn').addEventListener('click', deleteDraft);
 scrim.addEventListener('click', closeSheet);
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sheet.hidden) closeSheet(); });
 
+// Bottom tab bar
+$('#tabHome').addEventListener('click', () => setTab('home'));
+$('#tabList').addEventListener('click', () => setTab('list'));
+
 // Collapsing large-title nav
 const topbar = $('#topbar');
 const onScroll = () => topbar.classList.toggle('is-scrolled', window.scrollY > 46);
@@ -409,10 +506,10 @@ function seedIfFirstRun() {
 }
 
 seedIfFirstRun();
-renderToday();
+setTab('home');
 render();
 
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderToday(); render(); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js').catch(() => {}));

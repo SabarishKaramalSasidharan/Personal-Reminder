@@ -23,6 +23,20 @@ _None yet._
 
 ## Iterations
 
+### 2026-10-01 — Dashboard landing + bottom tab bar
+- Request: "I need a dashboard view on landing and then this current view should come." Confirmed scope: dashboard shows **Up next** + **Needs attention** + overview content; navigation via a **bottom tab bar** (Home / All).
+- Added two views switched by a fixed bottom tab bar (Home = dashboard, All = the existing filtered list). Home is the landing view.
+- **Dashboard content:**
+  - *Needs attention* — overdue + due-soon items (reuses `computeView` state `due`/`soon`); section hides when empty.
+  - *Up next* — the 3 soonest upcoming items not already flagged (positive, finite `sortKey`).
+  - *Overview* — stat tiles: total tracked, plus featured baby age and anniversary years when present.
+- Moved the compose button from centered to bottom-right so it clears the tab bar; tab bar respects `safe-area-inset-bottom`. Service worker cache bumped to v3.
+- Existing list view, date math, and add/edit sheet left unchanged — the list is now reached via the "All" tab.
+
+### 2026-10-01 — Mobile layout bugfix
+- Reported broken on iPhone Safari (overflowing/clipped). Cause: Duolingo rewrite made card title/sub inline `<span>`s, so `overflow:hidden`/`text-overflow:ellipsis` didn't apply → text overflowed the card → horizontal page overflow (clipped title, displaced elements). Hidden on desktop by the 700px width.
+- Fix: card title/sub to `display:block` (truncate properly), value column stacks on one line, `body { overflow-x:hidden }` guard. Deployed to GitHub Pages.
+
 ### 2026-09-30 — v0.4 Duolingo-style theme
 - Feedback: v0.3 muted palette read as dull; wanted a bright, playful Duolingo look.
 - Palette → Duolingo: feather-green (#58cc02) primary with darker "shelf" green, white background (dark = #131f24), category colors orange / cardinal-red / green / macaw-blue / beetle-purple.

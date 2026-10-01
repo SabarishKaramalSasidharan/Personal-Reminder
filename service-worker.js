@@ -1,5 +1,5 @@
 /* Milestones service worker — network-first (fresh when online, cached offline). */
-const CACHE = 'milestones-v2';
+const CACHE = 'milestones-v3';
 const ASSETS = [
   '.',
   'index.html',
