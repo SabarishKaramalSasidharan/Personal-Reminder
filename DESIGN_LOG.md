@@ -29,6 +29,7 @@ _None yet._
 - Placement (his choice): home-screen app icon (mark only, green on white; maskable variant padded), top of the home page (centered logo + name, replacing the header mascot), and a ~0.9s launch splash that fades into the app. The mascot stays only in the empty states.
 - Note: the reference is an existing third-party logo. Fine for a personal app; would need an original design before any public or commercial release.
 - Service worker cache bumped to v7.
+- Deploy bug found while verifying: GitHub Pages lets browsers cache CSS/JS for 10 minutes, so the new HTML loaded with the old app.js, which crashed on the removed mascot element and left the page blank. Fix: version query on asset URLs (`?v=N`, bump with each release) and a `no-cache` service-worker fetch so it always checks the server. SW cache to v8.
 
 ### 2026-10-01 — Mascot v2 + removed from Settings
 - Feedback (Sabarish): v1 mascot "not nice," asked for a better version, and to remove it from Settings.

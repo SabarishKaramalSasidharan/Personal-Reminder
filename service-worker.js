@@ -1,5 +1,5 @@
 /* Milestones service worker — network-first (fresh when online, cached offline). */
-const CACHE = 'milestones-v7';
+const CACHE = 'milestones-v8';
 const ASSETS = [
   '.',
   'index.html',
@@ -26,12 +26,12 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   event.respondWith(
-    fetch(event.request).then(res => {
+    fetch(event.request, { cache: 'no-cache' }).then(res => {
       if (res && res.status === 200 && res.type === 'basic') {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(event.request, copy));
       }
       return res;
-    }).catch(() => caches.match(event.request).then(c => c || caches.match('index.html')))
+    }).catch(() => caches.match(event.request, { ignoreSearch: true }).then(c => c || caches.match('index.html')))
   );
 });
