@@ -17,7 +17,7 @@ const ICONS = {
 };
 
 /* Milo — the app mascot (an elephant: "never forgets"). Flat SVG, theme-adaptive via CSS vars. */
-const MASCOT = `<svg viewBox="0 0 100 100" aria-hidden="true">
+const MASCOT = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true">
   <ellipse cx="20" cy="44" rx="17" ry="21" fill="var(--mascot-dark)"/>
   <ellipse cx="80" cy="44" rx="17" ry="21" fill="var(--mascot-dark)"/>
   <ellipse cx="23" cy="45" rx="10" ry="13" fill="var(--mascot)"/>
