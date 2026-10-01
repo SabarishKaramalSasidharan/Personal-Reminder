@@ -23,6 +23,14 @@ _None yet._
 
 ## Iterations
 
+### 2026-10-01 — Mascot, greeting, more metrics, Settings
+- Request: more home metrics; a welcome greeting; a Settings page (name + backup/restore + clear data + appearance); and "a mascot for the app that appears visually throughout."
+- **Mascot — "Milo" the elephant** (v1): chosen for the "an elephant never forgets" association (fits a reminder app) and because it doesn't clash with the existing cat/paw category icon. Flat hand-coded SVG in brand green via CSS vars (`--mascot`/`--mascot-dark`) so it theme-adapts. Appears in the home greeting header, both empty states, and the Settings header. *Open:* v1 is a coded placeholder — Sabarish may replace it with his own Figma artwork (swap the `MASCOT` SVG string). App launcher icon not yet changed to Milo.
+- **Greeting:** home hero now shows a time-of-day greeting + name ("Good morning, Sabarish") with the date beneath; app name "Milestones" moves to the collapsed top bar.
+- **More metrics** on the dashboard Overview: Tracked, Need attention (when >0), Next event (days to soonest), Next 31 days, plus the featured baby age and anniversary years.
+- **Settings** (gear in the top-right, opens as a bottom sheet — not a third tab, to avoid colliding with the compose button): name field (drives greeting, saves live); Appearance Auto/Light/Dark (overrides system via `data-theme`, updates the status-bar `theme-color`); Export backup (downloads JSON) and Restore (file import with validation + confirm); Delete all milestones (keeps name/prefs). Settings stored under `milestones.settings`.
+- Service worker cache bumped to v4.
+
 ### 2026-10-01 — Dashboard landing + bottom tab bar
 - Request: "I need a dashboard view on landing and then this current view should come." Confirmed scope: dashboard shows **Up next** + **Needs attention** + overview content; navigation via a **bottom tab bar** (Home / All).
 - Added two views switched by a fixed bottom tab bar (Home = dashboard, All = the existing filtered list). Home is the landing view.

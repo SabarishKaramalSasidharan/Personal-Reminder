@@ -16,6 +16,22 @@ const ICONS = {
   other: '<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="15" rx="3.2"/><path d="M4 9.6h16M8 3.6v3.8M16 3.6v3.8"/></g><g fill="currentColor"><circle cx="8.5" cy="13.5" r="1"/><circle cx="12" cy="13.5" r="1"/><circle cx="15.5" cy="13.5" r="1"/></g>',
 };
 
+/* Milo — the app mascot (an elephant: "never forgets"). Flat SVG, theme-adaptive via CSS vars. */
+const MASCOT = `<svg viewBox="0 0 100 100" aria-hidden="true">
+  <ellipse cx="20" cy="44" rx="17" ry="21" fill="var(--mascot-dark)"/>
+  <ellipse cx="80" cy="44" rx="17" ry="21" fill="var(--mascot-dark)"/>
+  <ellipse cx="23" cy="45" rx="10" ry="13" fill="var(--mascot)"/>
+  <ellipse cx="77" cy="45" rx="10" ry="13" fill="var(--mascot)"/>
+  <path d="M27 44a23 23 0 0 1 46 0v3c0 17-10 29-23 29S27 65 27 47z" fill="var(--mascot)"/>
+  <path d="M50 58c-7 1-8 9-4 16 3 6-1 10-6 11" fill="none" stroke="var(--mascot)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="40" cy="45" r="6" fill="#fff"/>
+  <circle cx="60" cy="45" r="6" fill="#fff"/>
+  <circle cx="41" cy="46" r="2.9" fill="#17323c"/>
+  <circle cx="59" cy="46" r="2.9" fill="#17323c"/>
+  <circle cx="33" cy="57" r="4.2" fill="#ff9bb0"/>
+  <circle cx="67" cy="57" r="4.2" fill="#ff9bb0"/>
+</svg>`;
+
 const CATEGORIES = [
   { id: 'baby',        label: 'Baby',        accent: 'var(--c-baby)',        defaultMode: 'age' },
   { id: 'anniversary', label: 'Anniversary', accent: 'var(--c-anniversary)', defaultMode: 'anniversary' },
@@ -49,6 +65,8 @@ function parseDate(str) {
   const [y, m, d] = str.split('-').map(Number);
   return new Date(y, m - 1, d);
 }
+
+const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 function daysInMonth(year, monthIndex) {
   return new Date(year, monthIndex + 1, 0).getDate();
@@ -179,13 +197,44 @@ function computeView(entry) {
 
 /* ---------------- Storage ---------------- */
 
+const SETTINGS_KEY = 'milestones.settings';
+
 function load() {
   try { const raw = localStorage.getItem(STORE_KEY); return raw ? JSON.parse(raw) : []; }
   catch { return []; }
 }
 function save(items) { localStorage.setItem(STORE_KEY, JSON.stringify(items)); }
 
-let state = { items: load(), filter: 'all', view: 'home', editingId: null, draft: null };
+function loadSettings() {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; } catch { return {}; }
+}
+function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings)); }
+
+let state = { items: load(), filter: 'all', view: 'home', settings: loadSettings(), editingId: null, draft: null };
+
+/* ---------------- Theme + greeting ---------------- */
+
+const THEMES = [{ id: 'auto', label: 'Auto' }, { id: 'light', label: 'Light' }, { id: 'dark', label: 'Dark' }];
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+function resolvedDark(theme) {
+  return theme === 'dark' || (theme !== 'light' && prefersDark.matches);
+}
+function applyTheme(theme) {
+  const root = document.documentElement;
+  if (theme === 'light' || theme === 'dark') root.setAttribute('data-theme', theme);
+  else root.removeAttribute('data-theme');
+  const meta = document.getElementById('themeColorMeta');
+  if (meta) meta.content = resolvedDark(theme) ? '#131f24' : '#ffffff';
+}
+prefersDark.addEventListener('change', () => applyTheme(state.settings.theme || 'auto'));
+
+function greeting() {
+  const h = new Date().getHours();
+  const g = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+  const name = (state.settings.name || '').trim();
+  return name ? `${g}, ${name}` : g;
+}
 
 /* ---------------- Rendering ---------------- */
 
@@ -195,15 +244,23 @@ const emptyEl = $('#empty');
 const filtersEl = $('#filters');
 
 const HERO = {
-  home: { title: 'Milestones', sub: () => today().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }) },
-  list: { title: 'All', sub: () => { const n = state.items.length; return `${n} ${n === 1 ? 'milestone' : 'milestones'} tracked`; } },
+  home: {
+    title: () => greeting(),
+    sub: () => today().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }),
+    compact: 'Milestones',
+  },
+  list: {
+    title: () => 'All',
+    sub: () => { const n = state.items.length; return `${n} ${n === 1 ? 'milestone' : 'milestones'} tracked`; },
+    compact: 'All',
+  },
 };
 
 function renderHero() {
   const h = HERO[state.view];
-  $('#heroTitle').textContent = h.title;
+  $('#heroTitle').textContent = h.title();
   $('#heroSub').textContent = h.sub();
-  $('#compactTitle').textContent = h.title;
+  $('#compactTitle').textContent = h.compact;
 }
 
 /* Build a card button element from an entry + its computed view */
@@ -265,7 +322,7 @@ function renderHome() {
   upSection.hidden = upnext.length === 0;
   upnext.forEach(({ it, view }) => upList.appendChild(makeCard(it, view)));
 
-  renderStats(withViews);
+  renderStats(withViews, attention);
 }
 
 function statTile(num, label, accent) {
@@ -276,13 +333,29 @@ function statTile(num, label, accent) {
   return el;
 }
 
-function renderStats(withViews) {
+function renderStats(withViews, attention) {
   const row = $('#statsRow');
   row.innerHTML = '';
   const t = today();
 
   // Total tracked
   row.appendChild(statTile(String(state.items.length), 'Tracked'));
+
+  // Needs attention count (only when there is something)
+  if (attention.length) {
+    row.appendChild(statTile(String(attention.length), 'Need attention', 'var(--red)'));
+  }
+
+  // Soonest upcoming event (positive, finite countdown)
+  const next = withViews.find(x => isFinite(x.view.sortKey) && x.view.sortKey >= 0);
+  if (next) {
+    const d = next.view.sortKey;
+    row.appendChild(statTile(d === 0 ? 'Today' : `${d}d`, 'Next event'));
+  }
+
+  // Events coming up in the next 31 days
+  const thisMonth = withViews.filter(x => isFinite(x.view.sortKey) && x.view.sortKey >= 0 && x.view.sortKey <= 31).length;
+  row.appendChild(statTile(String(thisMonth), 'Next 31 days'));
 
   // Featured: first baby age
   const baby = state.items.find(i => i.mode === 'age' && parseDate(i.date));
@@ -339,6 +412,7 @@ function setTab(view) {
   $('#tabList').classList.toggle('is-active', view === 'list');
   $('#tabHome').setAttribute('aria-current', view === 'home' ? 'page' : 'false');
   $('#tabList').setAttribute('aria-current', view === 'list' ? 'page' : 'false');
+  $('#heroMascot').hidden = view !== 'home';
   renderHero();
   window.scrollTo(0, 0);
   topbar.classList.remove('is-scrolled');
@@ -474,18 +548,111 @@ function deleteDraft() {
   render();
 }
 
+/* ---------------- Settings ---------------- */
+
+const settingsSheet = $('#settingsSheet');
+
+function buildThemeChips() {
+  const box = $('#themeChips');
+  const current = state.settings.theme || 'auto';
+  box.innerHTML = '';
+  THEMES.forEach(o => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chip';
+    btn.setAttribute('role', 'radio');
+    btn.setAttribute('aria-checked', String(o.id === current));
+    btn.style.setProperty('--accent', 'var(--tint)');
+    btn.textContent = o.label;
+    btn.addEventListener('click', () => {
+      state.settings.theme = o.id;
+      saveSettings();
+      applyTheme(o.id);
+      buildThemeChips();
+    });
+    box.appendChild(btn);
+  });
+}
+
+function openSettings() {
+  $('#sName').value = state.settings.name || '';
+  buildThemeChips();
+  settingsSheet.hidden = false;
+  scrim.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+function closeSettings() { settingsSheet.hidden = true; scrim.hidden = true; document.body.style.overflow = ''; }
+function closeOverlays() { if (!sheet.hidden) closeSheet(); if (!settingsSheet.hidden) closeSettings(); }
+
+function exportData() {
+  const payload = JSON.stringify(
+    { app: 'milestones', version: 1, exportedAt: new Date().toISOString(), items: state.items, settings: state.settings },
+    null, 2
+  );
+  const url = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `milestones-backup-${isoDate(today())}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function importData(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    let data;
+    try { data = JSON.parse(reader.result); } catch { alert('That file isn’t valid JSON.'); return; }
+    const items = Array.isArray(data) ? data : data && data.items;
+    if (!Array.isArray(items) || !items.every(i => i && typeof i.title === 'string' && typeof i.date === 'string')) {
+      alert('That file isn’t a valid Milestones backup.');
+      return;
+    }
+    if (!confirm(`Restore ${items.length} milestone${items.length === 1 ? '' : 's'}? This replaces what’s on this device.`)) return;
+    state.items = items.map(i => ({ id: i.id || 'm_' + Math.random().toString(36).slice(2, 9), createdAt: i.createdAt || Date.now(), ...i }));
+    save(state.items);
+    if (data && data.settings && typeof data.settings === 'object') {
+      state.settings = { ...state.settings, ...data.settings };
+      saveSettings();
+      $('#sName').value = state.settings.name || '';
+      applyTheme(state.settings.theme || 'auto');
+      buildThemeChips();
+    }
+    render();
+    alert('Backup restored.');
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData() {
+  if (!confirm('Delete all milestones? This cannot be undone. Your name and preferences are kept.')) return;
+  state.items = [];
+  save(state.items);
+  render();
+}
+
 /* ---------------- Wiring ---------------- */
 
 $('#addBtn').addEventListener('click', () => openSheet());
 $('#cancelBtn').addEventListener('click', closeSheet);
 $('#saveBtn').addEventListener('click', saveDraft);
 $('#deleteBtn').addEventListener('click', deleteDraft);
-scrim.addEventListener('click', closeSheet);
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sheet.hidden) closeSheet(); });
+scrim.addEventListener('click', closeOverlays);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOverlays(); });
 
 // Bottom tab bar
 $('#tabHome').addEventListener('click', () => setTab('home'));
 $('#tabList').addEventListener('click', () => setTab('list'));
+
+// Settings
+$('#settingsBtn').addEventListener('click', openSettings);
+$('#settingsDone').addEventListener('click', closeSettings);
+$('#sName').addEventListener('input', e => { state.settings.name = e.target.value; saveSettings(); renderHero(); });
+$('#exportBtn').addEventListener('click', exportData);
+$('#importBtn').addEventListener('click', () => $('#importFile').click());
+$('#importFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) importData(f); e.target.value = ''; });
+$('#clearBtn').addEventListener('click', clearAllData);
 
 // Collapsing large-title nav
 const topbar = $('#topbar');
@@ -506,6 +673,9 @@ function seedIfFirstRun() {
 }
 
 seedIfFirstRun();
+applyTheme(state.settings.theme || 'auto');
+const parseSVG = str => new DOMParser().parseFromString(str, 'image/svg+xml').documentElement;
+document.querySelectorAll('[data-mascot]').forEach(el => el.replaceChildren(parseSVG(MASCOT)));
 setTab('home');
 render();
 
