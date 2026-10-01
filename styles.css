@@ -37,6 +37,7 @@
   /* mascot (Milo the elephant) */
   --mascot: #58cc02;
   --mascot-dark: #46a302;
+  --mascot-light: #89e219;
 }
 
 /* Dark palette — shared by forced dark and (auto + system dark) */
@@ -68,6 +69,7 @@
 
   --mascot: #58cc02;
   --mascot-dark: #3d8a02;
+  --mascot-light: #7fd11b;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -99,6 +101,7 @@
 
     --mascot: #58cc02;
     --mascot-dark: #3d8a02;
+    --mascot-light: #7fd11b;
   }
 }
 
@@ -240,7 +243,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .hero__mascot {
   flex: 0 0 auto;
-  width: 66px; height: 66px;
+  width: 76px; height: 76px;
 }
 .hero__mascot[hidden] { display: none; }
 
@@ -554,9 +557,6 @@ textarea.row__input { resize: none; line-height: 1.4; }
 .row--link { color: var(--tint); font-size: 17px; font-weight: 800; justify-content: flex-start; }
 .row--link:active { background: var(--card-press); }
 
-/* Settings sheet */
-.settings__hero { display: grid; place-items: center; padding: 4px 0 6px; }
-.settings__mascot { width: 96px; height: 96px; }
 
 /* Stepper (interval) */
 .stepper { display: flex; align-items: center; gap: 8px; }

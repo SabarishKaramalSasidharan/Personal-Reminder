@@ -17,19 +17,39 @@ const ICONS = {
 };
 
 /* Milo — the app mascot (an elephant: "never forgets"). Flat SVG, theme-adaptive via CSS vars. */
-const MASCOT = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true">
-  <ellipse cx="20" cy="44" rx="17" ry="21" fill="var(--mascot-dark)"/>
-  <ellipse cx="80" cy="44" rx="17" ry="21" fill="var(--mascot-dark)"/>
-  <ellipse cx="23" cy="45" rx="10" ry="13" fill="var(--mascot)"/>
-  <ellipse cx="77" cy="45" rx="10" ry="13" fill="var(--mascot)"/>
-  <path d="M27 44a23 23 0 0 1 46 0v3c0 17-10 29-23 29S27 65 27 47z" fill="var(--mascot)"/>
-  <path d="M50 58c-7 1-8 9-4 16 3 6-1 10-6 11" fill="none" stroke="var(--mascot)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="40" cy="45" r="6" fill="#fff"/>
-  <circle cx="60" cy="45" r="6" fill="#fff"/>
-  <circle cx="41" cy="46" r="2.9" fill="#17323c"/>
-  <circle cx="59" cy="46" r="2.9" fill="#17323c"/>
-  <circle cx="33" cy="57" r="4.2" fill="#ff9bb0"/>
-  <circle cx="67" cy="57" r="4.2" fill="#ff9bb0"/>
+const MASCOT = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true">
+  <ellipse cx="60" cy="114" rx="32" ry="4" fill="#000" opacity="0.08"/>
+  <path d="M87 98c7 1 10-4 9-9" fill="none" stroke="var(--mascot-dark)" stroke-width="3.5" stroke-linecap="round"/>
+  <ellipse cx="60" cy="92" rx="29" ry="21" fill="var(--mascot)"/>
+  <ellipse cx="60" cy="98" rx="17" ry="12" fill="var(--mascot-light)"/>
+  <ellipse cx="45" cy="109" rx="10" ry="6" fill="var(--mascot)"/>
+  <ellipse cx="75" cy="109" rx="10" ry="6" fill="var(--mascot)"/>
+  <g fill="var(--mascot-light)">
+    <circle cx="41" cy="111" r="1.7"/><circle cx="45" cy="112" r="1.7"/><circle cx="49" cy="111" r="1.7"/>
+    <circle cx="71" cy="111" r="1.7"/><circle cx="75" cy="112" r="1.7"/><circle cx="79" cy="111" r="1.7"/>
+  </g>
+  <ellipse cx="25" cy="50" rx="19" ry="21" fill="var(--mascot-dark)" transform="rotate(-12 25 50)"/>
+  <ellipse cx="95" cy="50" rx="19" ry="21" fill="var(--mascot-dark)" transform="rotate(12 95 50)"/>
+  <ellipse cx="26" cy="51" rx="12" ry="14" fill="#ffb3c4" transform="rotate(-12 26 51)"/>
+  <ellipse cx="94" cy="51" rx="12" ry="14" fill="#ffb3c4" transform="rotate(12 94 51)"/>
+  <circle cx="60" cy="48" r="27" fill="var(--mascot)"/>
+  <ellipse cx="49" cy="33" rx="10" ry="5.5" fill="var(--mascot-light)" transform="rotate(-20 49 33)"/>
+  <path d="M57 22c-1-5 2-8 5-7-2 2-1 4 0 6 1-4 5-5 7-3-3 1-4 3-4 5" fill="var(--mascot-dark)"/>
+  <path d="M60 60c0 9 1 16 7 20s13 1 14-5" fill="none" stroke="var(--mascot-dark)" stroke-width="13.5" stroke-linecap="round"/>
+  <path d="M60 60c0 9 1 16 7 20s13 1 14-5" fill="none" stroke="var(--mascot)" stroke-width="10" stroke-linecap="round"/>
+  <g stroke="var(--mascot-dark)" stroke-width="1.6" stroke-linecap="round" fill="none">
+    <path d="M56.5 67h7"/><path d="M58 73.5l6-1.5"/>
+  </g>
+  <ellipse cx="48" cy="46" rx="7" ry="8.5" fill="#fff"/>
+  <ellipse cx="72" cy="46" rx="7" ry="8.5" fill="#fff"/>
+  <ellipse cx="49" cy="48" rx="4" ry="5" fill="#17323c"/>
+  <ellipse cx="71" cy="48" rx="4" ry="5" fill="#17323c"/>
+  <circle cx="50.6" cy="45.6" r="1.7" fill="#fff"/>
+  <circle cx="72.6" cy="45.6" r="1.7" fill="#fff"/>
+  <path d="M42 35q6-4 11-1M67 34q5-3 11 1" fill="none" stroke="var(--mascot-dark)" stroke-width="2.2" stroke-linecap="round"/>
+  <ellipse cx="38" cy="58" rx="5" ry="3.2" fill="#ff9bb0"/>
+  <ellipse cx="82" cy="58" rx="5" ry="3.2" fill="#ff9bb0"/>
+  <path d="M45 64q4 4 8 1" fill="none" stroke="#17323c" stroke-width="2" stroke-linecap="round"/>
 </svg>`;
 
 const CATEGORIES = [

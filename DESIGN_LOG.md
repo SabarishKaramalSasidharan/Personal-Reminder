@@ -23,6 +23,12 @@ _None yet._
 
 ## Iterations
 
+### 2026-10-01 — Mascot v2 + removed from Settings
+- Feedback (Sabarish): v1 mascot "not nice," asked for a better version, and to remove it from Settings.
+- Mascot v2: flat head replaced with a full-body sitting elephant: rounded body with lighter belly, feet with toenails, tail, full ears with pink insides, head highlight, hair tuft, outlined trunk curling up, larger eyes with highlights, brows, cheeks, smile. Adds `--mascot-light`. Home size bumped 66→76px.
+- Removed from the Settings sheet; now appears only in the home greeting and the empty states.
+- Still a coded placeholder. Open: swap for Figma artwork if desired.
+
 ### 2026-10-01 — Mascot, greeting, more metrics, Settings
 - Request: more home metrics; a welcome greeting; a Settings page (name + backup/restore + clear data + appearance); and "a mascot for the app that appears visually throughout."
 - **Mascot — "Milo" the elephant** (v1): chosen for the "an elephant never forgets" association (fits a reminder app) and because it doesn't clash with the existing cat/paw category icon. Flat hand-coded SVG in brand green via CSS vars (`--mascot`/`--mascot-dark`) so it theme-adapts. Appears in the home greeting header, both empty states, and the Settings header. *Open:* v1 is a coded placeholder — Sabarish may replace it with his own Figma artwork (swap the `MASCOT` SVG string). App launcher icon not yet changed to Milo.
