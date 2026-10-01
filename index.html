@@ -10,13 +10,20 @@
   <title>Milestones</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Oswald:wght@700&display=swap" rel="stylesheet" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
   <link rel="icon" href="icons/icon-192.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div class="splash" id="splash" aria-hidden="true">
+    <div class="brand brand--splash">
+      <div class="brand__mark" data-logo></div>
+      <div class="brand__name">milestones</div>
+    </div>
+  </div>
+
   <div class="topbar" id="topbar">
     <div class="topbar__inner">
       <span class="topbar__title" id="compactTitle">Milestones</span>
@@ -27,12 +34,16 @@
   </div>
 
   <main id="app">
+    <div class="brand brand--home" id="homeBrand" role="img" aria-label="Milestones">
+      <div class="brand__mark" data-logo></div>
+      <div class="brand__name">milestones</div>
+    </div>
+
     <header class="hero">
       <div class="hero__text">
         <h1 class="hero__title" id="heroTitle">Milestones</h1>
         <p class="hero__sub" id="heroSub"></p>
       </div>
-      <div class="hero__mascot" id="heroMascot" data-mascot aria-hidden="true"></div>
     </header>
 
     <!-- ============ DASHBOARD ============ -->

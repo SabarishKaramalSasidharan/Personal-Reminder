@@ -23,6 +23,13 @@ _None yet._
 
 ## Iterations
 
+### 2026-10-01 — App logo + wordmark
+- Request (Sabarish, with reference images): a logo like the reference "elephant" mark in green, with the app name below it.
+- Mark: an elephant formed by white cuts through a rounded square (head with eye dot, trunk step-down, leg gap), recreated as SVG in feather green (`--tint`). Wordmark: "milestones" in lowercase Oswald 700 (closest free match to the reference's condensed heavy type).
+- Placement (his choice): home-screen app icon (mark only, green on white; maskable variant padded), top of the home page (centered logo + name, replacing the header mascot), and a ~0.9s launch splash that fades into the app. The mascot stays only in the empty states.
+- Note: the reference is an existing third-party logo. Fine for a personal app; would need an original design before any public or commercial release.
+- Service worker cache bumped to v7.
+
 ### 2026-10-01 — Mascot v2 + removed from Settings
 - Feedback (Sabarish): v1 mascot "not nice," asked for a better version, and to remove it from Settings.
 - Mascot v2: flat head replaced with a full-body sitting elephant: rounded body with lighter belly, feet with toenails, tail, full ears with pink insides, head highlight, hair tuft, outlined trunk curling up, larger eyes with highlights, brows, cheeks, smile. Adds `--mascot-light`. Home size bumped 66→76px.

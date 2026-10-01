@@ -52,6 +52,16 @@ const MASCOT = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" ar
   <path d="M45 64q4 4 8 1" fill="none" stroke="#17323c" stroke-width="2" stroke-linecap="round"/>
 </svg>`;
 
+/* App logo mark — elephant formed by cuts in a rounded square. Uses currentColor. */
+const LOGO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true">
+  <mask id="logoCut">
+    <rect width="100" height="100" fill="#fff"/>
+    <path d="M51 0V47H17V79H31V100M68 100V63" fill="none" stroke="#000" stroke-width="2.6"/>
+    <circle cx="19" cy="31" r="1.9" fill="#000"/>
+  </mask>
+  <rect x="6" y="6" width="88" height="88" rx="10" fill="currentColor" mask="url(#logoCut)"/>
+</svg>`;
+
 const CATEGORIES = [
   { id: 'baby',        label: 'Baby',        accent: 'var(--c-baby)',        defaultMode: 'age' },
   { id: 'anniversary', label: 'Anniversary', accent: 'var(--c-anniversary)', defaultMode: 'anniversary' },
@@ -432,7 +442,7 @@ function setTab(view) {
   $('#tabList').classList.toggle('is-active', view === 'list');
   $('#tabHome').setAttribute('aria-current', view === 'home' ? 'page' : 'false');
   $('#tabList').setAttribute('aria-current', view === 'list' ? 'page' : 'false');
-  $('#heroMascot').hidden = view !== 'home';
+  $('#homeBrand').hidden = view !== 'home';
   renderHero();
   window.scrollTo(0, 0);
   topbar.classList.remove('is-scrolled');
@@ -696,6 +706,7 @@ seedIfFirstRun();
 applyTheme(state.settings.theme || 'auto');
 const parseSVG = str => new DOMParser().parseFromString(str, 'image/svg+xml').documentElement;
 document.querySelectorAll('[data-mascot]').forEach(el => el.replaceChildren(parseSVG(MASCOT)));
+document.querySelectorAll('[data-logo]').forEach((el, i) => el.replaceChildren(parseSVG(LOGO.replaceAll('logoCut', 'logoCut' + i))));
 setTab('home');
 render();
 
@@ -704,3 +715,10 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) rend
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js').catch(() => {}));
 }
+
+// Launch splash: show briefly, then fade into the app
+setTimeout(() => {
+  const splash = $('#splash');
+  splash.classList.add('is-done');
+  splash.addEventListener('transitionend', () => splash.remove(), { once: true });
+}, 900);
