@@ -75,6 +75,8 @@ body {
   -webkit-font-smoothing: antialiased;
   letter-spacing: 0;
   overscroll-behavior-y: none;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
@@ -197,12 +199,16 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 .card__body { flex: 1 1 auto; min-width: 0; }
 .card__title {
+  display: block;
+  max-width: 100%;
   font-size: 17px;
   font-weight: 800;
   line-height: 1.25;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .card__sub {
+  display: block;
+  max-width: 100%;
   margin-top: 2px;
   font-size: 13px;
   font-weight: 700;
@@ -218,8 +224,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   gap: 8px;
   max-width: 46%;
 }
-.card__value { text-align: right; }
+.card__value { text-align: right; display: block; }
 .card__value-main {
+  display: block;
+  white-space: nowrap;
   font-size: 17px;
   font-weight: 900;
   line-height: 1.15;
@@ -227,6 +235,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   color: var(--label);
 }
 .card__value-label {
+  display: block;
+  white-space: nowrap;
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
