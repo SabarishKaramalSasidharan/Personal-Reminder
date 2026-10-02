@@ -28,6 +28,12 @@ _None yet._
 
 ## Iterations
 
+### 2026-10-02 — Card title truncation bugfix
+- Reported (Sabarish, screenshot): "Simba Birthday" card showed as "Simba Birt…" while a near-identical card ("Hana Birthday") showed in full.
+- Root cause: `.card__title` was single-line (`white-space: nowrap` + ellipsis). The trailing area's width is shared by the SOON/DUE status pill *and* the value column; when both are present together with a long value (the "age" mode's "3y 11mo 25d" format), the trail claims enough width that the title's single line has too little room and clips early. Cards without a status pill (like Hana's, in Up Next rather than Needs Attention) didn't hit this.
+- Fix: `.card__title` now clamps to 2 lines (`-webkit-line-clamp: 2`) instead of 1, so a squeezed title wraps instead of truncating mid-word. Verified by seeding a local build with both items and rendering via headless Chrome at 390px width — title now shows in full / wraps cleanly, no regression on the non-squeezed card.
+- Asset versions bumped to v14; SW cache to v14.
+
 ### 2026-10-02 — "Pet health" renamed to "Pets"; new baby icon
 - Request (Sabarish): rename the Pet health category to Pets, and change the baby category's icon.
 - Category label only; internal id (`cat`) and accent color unchanged, so existing entries aren't affected.

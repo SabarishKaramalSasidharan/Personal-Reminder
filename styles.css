@@ -347,12 +347,15 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 .card__body { flex: 1 1 auto; min-width: 0; }
 .card__title {
-  display: block;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   max-width: 100%;
   font-size: 17px;
   font-weight: 800;
   line-height: 1.25;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  overflow: hidden;
 }
 .card__sub {
   display: block;
