@@ -1,5 +1,5 @@
 /* Ellie service worker — network-first (fresh when online, cached offline). */
-const CACHE = 'milestones-v11';
+const CACHE = 'milestones-v12';
 const ASSETS = [
   '.',
   'index.html',

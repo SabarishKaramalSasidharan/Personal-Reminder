@@ -353,6 +353,8 @@ function renderHome() {
   upnext.forEach(({ it, view }) => upList.appendChild(makeCard(it, view)));
 
   renderStats(withViews, attention);
+  updateBadge(attention.length);
+  maybeNudge(attention);
 }
 
 function statTile(num, label, accent) {
@@ -578,6 +580,91 @@ function deleteDraft() {
   render();
 }
 
+/* ---------------- Notifications (on-device only — no server, no account) ---------------- */
+
+// App icon badge: count of items needing attention. Checked each time the app renders.
+function updateBadge(count) {
+  if (!('setAppBadge' in navigator)) return;
+  if (count > 0) navigator.setAppBadge(count).catch(() => {});
+  else if ('clearAppBadge' in navigator) navigator.clearAppBadge().catch(() => {});
+}
+
+function notifSupported() { return 'Notification' in window; }
+
+// Shows a notification banner via the service worker (works for installed PWAs on iOS 16.4+).
+function showNudge(title, body) {
+  const opts = { body, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', tag: 'ellie-nudge' };
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(reg => reg.showNotification(title, opts)).catch(() => {
+      try { new Notification(title, opts); } catch {}
+    });
+  } else {
+    try { new Notification(title, opts); } catch {}
+  }
+}
+
+// Nudges at most once per day, only when notifications are enabled, permitted, and something is due/soon.
+// This only fires while the app is open/foregrounded — there's no server to wake it up when closed.
+function maybeNudge(attention) {
+  if (!state.settings.notifications) return;
+  if (!notifSupported() || Notification.permission !== 'granted') return;
+  if (!attention.length) return;
+  const t = isoDate(today());
+  if (state.settings.lastNudgeDate === t) return;
+  const title = attention.length === 1 ? attention[0].it.title : `${attention.length} milestones need attention`;
+  const v = attention[0].view;
+  const body = attention.length === 1
+    ? [v.valueMain, v.valueLabel].filter(Boolean).join(' · ')
+    : attention.slice(0, 3).map(a => a.it.title).join(', ');
+  showNudge(title, body);
+  state.settings.lastNudgeDate = t;
+  saveSettings();
+}
+
+function refreshNotifBtn() {
+  const btn = $('#notifBtn');
+  const hint = $('#notifHint');
+  if (!notifSupported()) {
+    btn.textContent = 'Not supported in this browser';
+    btn.disabled = true;
+    hint.textContent = 'This browser doesn’t support notifications.';
+    return;
+  }
+  const perm = Notification.permission;
+  btn.disabled = false;
+  if (perm === 'denied') {
+    btn.textContent = 'Blocked — enable in iOS Settings';
+    btn.disabled = true;
+    hint.textContent = 'Notifications are blocked for this app. Turn them on in iOS Settings → Ellie → Notifications, then come back here.';
+  } else if (perm === 'granted' && state.settings.notifications) {
+    btn.textContent = 'Notifications on — tap to pause';
+    hint.textContent = 'You’ll get a nudge and a badge on the app icon when something needs attention — checked each time you open Ellie. Nothing leaves this device.';
+  } else if (perm === 'granted') {
+    btn.textContent = 'Paused — tap to resume';
+    hint.textContent = 'Notifications are allowed but paused.';
+  } else {
+    btn.textContent = 'Enable notifications';
+    hint.textContent = 'Get a nudge when something needs attention — checked only while using the app, nothing is sent through a server.';
+  }
+}
+
+function toggleNotifications() {
+  if (!notifSupported()) return;
+  const perm = Notification.permission;
+  if (perm === 'denied') return;
+  if (perm === 'granted') {
+    state.settings.notifications = !state.settings.notifications;
+    saveSettings();
+    refreshNotifBtn();
+    if (state.settings.notifications) render();
+    return;
+  }
+  Notification.requestPermission().then(result => {
+    if (result === 'granted') { state.settings.notifications = true; saveSettings(); render(); }
+    refreshNotifBtn();
+  });
+}
+
 /* ---------------- Settings ---------------- */
 
 const settingsSheet = $('#settingsSheet');
@@ -607,6 +694,7 @@ function buildThemeChips() {
 function openSettings() {
   $('#sName').value = state.settings.name || '';
   buildThemeChips();
+  refreshNotifBtn();
   settingsSheet.hidden = false;
   scrim.hidden = false;
   document.body.style.overflow = 'hidden';
@@ -679,6 +767,7 @@ $('#tabList').addEventListener('click', () => setTab('list'));
 $('#settingsBtn').addEventListener('click', openSettings);
 $('#settingsDone').addEventListener('click', closeSettings);
 $('#sName').addEventListener('input', e => { state.settings.name = e.target.value; saveSettings(); renderHero(); });
+$('#notifBtn').addEventListener('click', toggleNotifications);
 $('#exportBtn').addEventListener('click', exportData);
 $('#importBtn').addEventListener('click', () => $('#importFile').click());
 $('#importFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) importData(f); e.target.value = ''; });
@@ -701,6 +790,9 @@ function seedIfFirstRun() {
   state.items = sample.map((s, i) => ({ id: 'seed_' + i, createdAt: Date.now() + i, ...s }));
   save(state.items);
 }
+
+// Ask the browser to protect this app's storage from eviction under disk pressure.
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 
 seedIfFirstRun();
 applyTheme(state.settings.theme || 'auto');

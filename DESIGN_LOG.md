@@ -28,6 +28,14 @@ _None yet._
 
 ## Iterations
 
+### 2026-10-02 — Notifications (local-only) + persistent storage
+- Request (Sabarish): make sure data is saved on the phone, and add notifications to nudge before dates.
+- **Decision:** offered a fork — (A) no-backend, local-only nudges that only fire while the app is opened, vs (B) true background push, which needs a server to decide when to send and would mean dates leave the device. Sabarish chose **(A)**, keeping the "nothing is uploaded" privacy promise intact.
+- Added Settings → Notifications: a button requesting `Notification.requestPermission()`, with states for enabled/paused/blocked/unsupported. When granted, each render checks items in "Needs attention" and (at most once per calendar day) shows a notification via the service worker's `showNotification`, and sets the home-screen app icon badge count via the Badging API (`navigator.setAppBadge`). Both are on-device only — no push server, no account.
+- **Known limitation (told to Sabarish):** this only nudges while Ellie is open/foregrounded or briefly backgrounded with the tab alive — iOS doesn't let web apps schedule notifications for a future time while fully closed without a push server.
+- Durability: added `navigator.storage.persist()` on load, asking the browser not to evict the app's `localStorage` under disk pressure. Combined with being added to the home screen (which already exempts it from Safari's 7-day inactive-data cap), this is the actual "save it on my phone" mechanism — there's still no cloud backup, so Export/Restore in Settings remains the real backup path.
+- Asset versions bumped to v12; SW cache to v12.
+
 ### 2026-10-02 — Wordmark font swapped to Fredoka
 - Request (Sabarish): use a different font for the app name under the logo.
 - Replaced Oswald (condensed, heavy) with Fredoka (rounded, 700), a closer match to the playful mascot/Duolingo-style look than the narrow condensed wordmark. Applies to the splash screen's "ellie" wordmark (the only place the name still renders standalone — the home header shows the logo mark only).

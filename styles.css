@@ -588,6 +588,8 @@ textarea.row__input { resize: none; line-height: 1.4; }
 
 .row--link { color: var(--tint); font-size: 17px; font-weight: 800; justify-content: flex-start; }
 .row--link:active { background: var(--card-press); }
+.row--link:disabled { color: var(--label-3); font-weight: 700; }
+.row--link:disabled:active { background: none; }
 
 
 /* Stepper (interval) */

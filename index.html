@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
   <link rel="icon" href="icons/icon-192.png" />
-  <link rel="stylesheet" href="styles.css?v=11" />
+  <link rel="stylesheet" href="styles.css?v=12" />
 </head>
 <body>
   <div class="splash" id="splash" aria-hidden="true">
@@ -168,6 +168,12 @@
     <p class="group__header">Appearance</p>
     <div class="picker" id="themeChips" role="radiogroup" aria-label="Appearance"></div>
 
+    <p class="group__header">Notifications</p>
+    <div class="group">
+      <button class="row row--link" id="notifBtn" type="button">Enable notifications</button>
+    </div>
+    <p class="group__footer" id="notifHint"></p>
+
     <p class="group__header">Backup</p>
     <div class="group">
       <button class="row row--link" id="exportBtn" type="button">Export backup</button>
@@ -183,6 +189,6 @@
     <p class="group__footer">Everything is stored privately on this device — nothing is uploaded. Back up regularly: clearing the app or your browser data erases your milestones.</p>
   </section>
 
-  <script src="app.js?v=11"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>
