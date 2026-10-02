@@ -1,7 +1,7 @@
 {
-  "name": "Milestones",
-  "short_name": "Milestones",
-  "description": "Track the dates that matter — ages, anniversaries, and recurring pet-care reminders.",
+  "name": "Ellie",
+  "short_name": "Ellie",
+  "description": "Track the dates that matter \u2014 ages, anniversaries, and recurring pet-care reminders.",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
@@ -9,8 +9,23 @@
   "background_color": "#f4f1ec",
   "theme_color": "#f4f1ec",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

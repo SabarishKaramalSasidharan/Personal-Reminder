@@ -2,6 +2,11 @@
 
 ## Decisions
 
+### 2026-10-02 — App and mascot renamed to "Ellie"
+- **Chosen by Sabarish:** one shared name for the app and the elephant mascot: **Ellie** (short for elephant; warm, friendly). Picked over Memo, Smriti, and Aana. Replaces the app name "Milestones" and the mascot placeholder "Milo".
+- **Applied to:** page title, iOS home-screen label, manifest name/short_name, logo wordmark (lowercase "ellie" in Oswald), splash, top bar, backup filename.
+- **Kept on purpose:** "milestone" is still the word for an entry ("No milestones yet"). Internal storage keys (`milestones.v1`, `milestones.settings`) are unchanged so existing data and old backups still load. Repo/URL (`Personal-Reminder`) unchanged.
+
 ### 2026-09-30 — Build as an installable PWA, not native or LWC
 - **Chosen:** A self-contained Progressive Web App (vanilla HTML/CSS/JS, no build step, no server). Installs to the home screen on both iPhone (Safari → Add to Home Screen) and Android (Chrome → Install), runs fullscreen, works offline, stores data on-device in `localStorage`.
 - **Why:** Sabarish asked for "a proper app that works in iPhone or Android." A true native app (Swift/Kotlin/React Native/Flutter) needs Xcode/Android Studio and App Store/Play accounts — not installable onto his phone by us, and heavy to maintain. LWC/SLDS (the repo house rule) can't run standalone on a phone and would look like enterprise CRM. A PWA is the only path that actually lands a working app on both phones today with zero backend.
@@ -22,6 +27,10 @@
 _None yet._
 
 ## Iterations
+
+### 2026-10-02 — Home logo moved beside greeting
+- Feedback (Sabarish, screenshot of home): logo on the home page shouldn't have the name, and should sit to the right of the greeting.
+- Home: wordmark removed; logo mark only (60px), right of the greeting, where the mascot used to be. The splash still shows logo + "ellie".
 
 ### 2026-10-01 — App logo + wordmark
 - Request (Sabarish, with reference images): a logo like the reference "elephant" mark in green, with the app name below it.

@@ -1,4 +1,4 @@
-# Milestones
+# Ellie
 
 A personal date tracker — baby's exact age, anniversaries, recurring pet-care reminders (deworming, vaccinations), and family birthdays. Built as an installable PWA: no backend, works offline, data stays on the device.
 

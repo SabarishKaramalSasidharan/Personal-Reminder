@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   Milestones — a personal date tracker (PWA, no backend)
+   Ellie — a personal date tracker (PWA, no backend)
    Data lives in localStorage on the device.
 ============================================================ */
 
@@ -16,7 +16,7 @@ const ICONS = {
   other: '<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="15" rx="3.2"/><path d="M4 9.6h16M8 3.6v3.8M16 3.6v3.8"/></g><g fill="currentColor"><circle cx="8.5" cy="13.5" r="1"/><circle cx="12" cy="13.5" r="1"/><circle cx="15.5" cy="13.5" r="1"/></g>',
 };
 
-/* Milo — the app mascot (an elephant: "never forgets"). Flat SVG, theme-adaptive via CSS vars. */
+/* Ellie — the app mascot (shares the app name) (an elephant: "never forgets"). Flat SVG, theme-adaptive via CSS vars. */
 const MASCOT = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true">
   <ellipse cx="60" cy="114" rx="32" ry="4" fill="#000" opacity="0.08"/>
   <path d="M87 98c7 1 10-4 9-9" fill="none" stroke="var(--mascot-dark)" stroke-width="3.5" stroke-linecap="round"/>
@@ -277,7 +277,7 @@ const HERO = {
   home: {
     title: () => greeting(),
     sub: () => today().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }),
-    compact: 'Milestones',
+    compact: 'Ellie',
   },
   list: {
     title: () => 'All',
@@ -622,7 +622,7 @@ function exportData() {
   const url = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
   const a = document.createElement('a');
   a.href = url;
-  a.download = `milestones-backup-${isoDate(today())}.json`;
+  a.download = `ellie-backup-${isoDate(today())}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -636,7 +636,7 @@ function importData(file) {
     try { data = JSON.parse(reader.result); } catch { alert('That file isn’t valid JSON.'); return; }
     const items = Array.isArray(data) ? data : data && data.items;
     if (!Array.isArray(items) || !items.every(i => i && typeof i.title === 'string' && typeof i.date === 'string')) {
-      alert('That file isn’t a valid Milestones backup.');
+      alert('That file isn’t a valid Ellie backup.');
       return;
     }
     if (!confirm(`Restore ${items.length} milestone${items.length === 1 ? '' : 's'}? This replaces what’s on this device.`)) return;
