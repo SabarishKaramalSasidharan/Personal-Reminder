@@ -28,6 +28,11 @@ _None yet._
 
 ## Iterations
 
+### 2026-10-02 — Wordmark font swapped to Fredoka
+- Request (Sabarish): use a different font for the app name under the logo.
+- Replaced Oswald (condensed, heavy) with Fredoka (rounded, 700), a closer match to the playful mascot/Duolingo-style look than the narrow condensed wordmark. Applies to the splash screen's "ellie" wordmark (the only place the name still renders standalone — the home header shows the logo mark only).
+- Asset versions bumped to v11; SW cache to v11.
+
 ### 2026-10-02 — Home logo moved beside greeting
 - Feedback (Sabarish, screenshot of home): logo on the home page shouldn't have the name, and should sit to the right of the greeting.
 - Home: wordmark removed; logo mark only (60px), right of the greeting, where the mascot used to be. The splash still shows logo + "ellie".
