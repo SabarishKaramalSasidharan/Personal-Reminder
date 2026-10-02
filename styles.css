@@ -374,8 +374,17 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   align-items: center;
   gap: 8px;
   max-width: 46%;
+  min-width: 0;
 }
-.card__value { text-align: right; display: block; }
+.card__value-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  min-width: 0;
+}
+.card__value-stack .badge { align-self: flex-end; }
+.card__value { text-align: right; display: block; min-width: 0; }
 .card__value-main {
   display: block;
   white-space: nowrap;

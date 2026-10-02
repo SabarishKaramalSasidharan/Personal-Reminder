@@ -312,10 +312,12 @@ function makeCard(it, view) {
       <span class="card__sub">${escapeHtml(view.sub)}</span>
     </span>
     <span class="card__trail">
-      ${badge}
-      <span class="card__value${valClass}">
-        <span class="card__value-main">${escapeHtml(view.valueMain)}</span>
-        <span class="card__value-label">${escapeHtml(view.valueLabel)}</span>
+      <span class="card__value-stack">
+        ${badge}
+        <span class="card__value${valClass}">
+          <span class="card__value-main">${escapeHtml(view.valueMain)}</span>
+          <span class="card__value-label">${escapeHtml(view.valueLabel)}</span>
+        </span>
       </span>
       <span class="chevron"><svg viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></span>
     </span>`;

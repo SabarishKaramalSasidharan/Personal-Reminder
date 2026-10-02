@@ -28,6 +28,12 @@ _None yet._
 
 ## Iterations
 
+### 2026-10-02 — Chevron overflow bugfix (trail layout)
+- Reported (Sabarish, screenshot): the ">" chevron still sat outside the card's right edge even after the title-wrap fix.
+- Root cause: `.card__trail` laid the SOON/DUE pill and the value side-by-side in one row, sharing an 8px gap each with the chevron. With a wide value like "3y 11mo 25d", that row's content (badge + value + chevron) didn't fit inside the trail's own 46% max-width, so the chevron got pushed past the card's own right border instead of just squeezing the title.
+- Fix: badge now stacks above the value (`.card__value-stack`, column layout, right-aligned) instead of sitting beside it, so the trail only needs to fit the wider of the two — not their sum. Verified at a true 390px viewport (wrapped the test page in a fixed-width iframe, since headless Chrome's `--window-size` wasn't reliably setting the viewport) — chevron now sits inside the card with margin to spare, title shows in full.
+- Asset versions bumped to v15; SW cache to v15.
+
 ### 2026-10-02 — Card title truncation bugfix
 - Reported (Sabarish, screenshot): "Simba Birthday" card showed as "Simba Birt…" while a near-identical card ("Hana Birthday") showed in full.
 - Root cause: `.card__title` was single-line (`white-space: nowrap` + ellipsis). The trailing area's width is shared by the SOON/DUE status pill *and* the value column; when both are present together with a long value (the "age" mode's "3y 11mo 25d" format), the trail claims enough width that the title's single line has too little room and clips early. Cards without a status pill (like Hana's, in Up Next rather than Needs Attention) didn't hit this.
