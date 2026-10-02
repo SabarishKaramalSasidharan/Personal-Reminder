@@ -31,6 +31,7 @@ _None yet._
 ### 2026-10-02 — Home logo moved beside greeting
 - Feedback (Sabarish, screenshot of home): logo on the home page shouldn't have the name, and should sit to the right of the greeting.
 - Home: wordmark removed; logo mark only (60px), right of the greeting, where the mascot used to be. The splash still shows logo + "ellie".
+- Feedback (Sabarish, screenshot): settings gear looked broken. The curvy gear outline turned into blobs at 23px. Replaced it with a geometric 8-tooth gear (straight-sided teeth, clear gaps).
 
 ### 2026-10-01 — App logo + wordmark
 - Request (Sabarish, with reference images): a logo like the reference "elephant" mark in green, with the app name below it.
