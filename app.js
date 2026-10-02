@@ -9,7 +9,7 @@ const STORE_KEY = 'milestones.v1';
 
 /* SF-Symbol-style glyphs (use currentColor; badge sets color to white) */
 const ICONS = {
-  baby: '<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3.6h6M8.4 6.6h7.2l-.7 3H9.1z"/><path d="M9 9.6h6v8.6a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z"/><path d="M10.6 12.4h2.8M10.6 15h2.8"/></g>',
+  baby: '<g fill="currentColor"><ellipse cx="12" cy="7" rx="4.3" ry="3.3" fill="none" stroke="currentColor" stroke-width="2.2"/><rect x="7.3" y="10.3" width="9.4" height="4.2" rx="2.1"/><ellipse cx="12" cy="17.3" rx="2.3" ry="2.9"/></g>',
   anniversary: '<path fill="currentColor" d="M12 21s-7.4-4.6-9.7-9C.6 8.3 2.6 4.5 6.4 4.5c2 0 3.3 1.1 4.6 2.8 1.3-1.7 2.6-2.8 4.6-2.8 3.8 0 5.8 3.8 4.1 7.5C17.4 16.4 12 21 12 21z"/>',
   cat: '<g fill="currentColor"><ellipse cx="7" cy="10" rx="1.7" ry="2.2"/><ellipse cx="12" cy="8" rx="1.8" ry="2.4"/><ellipse cx="17" cy="10" rx="1.7" ry="2.2"/><path d="M12 12c-2.6 0-4.7 2-4.7 4.3 0 1.7 1.4 2.6 2.8 2.6.9 0 1.3-.4 1.9-.4s1 .4 1.9.4c1.4 0 2.8-.9 2.8-2.6C16.7 14 14.6 12 12 12z"/></g>',
   family: '<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.6 19c0-3 2.4-5 5.4-5s5.4 2 5.4 5"/><circle cx="16.6" cy="8.6" r="2.3"/><path d="M15.2 14.1c2.6-.4 5.2 1.5 5.2 4.9"/></g>',
@@ -65,7 +65,7 @@ const LOGO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria
 const CATEGORIES = [
   { id: 'baby',        label: 'Baby',        accent: 'var(--c-baby)',        defaultMode: 'age' },
   { id: 'anniversary', label: 'Anniversary', accent: 'var(--c-anniversary)', defaultMode: 'anniversary' },
-  { id: 'cat',         label: 'Pet health',  accent: 'var(--c-cat)',         defaultMode: 'recurring' },
+  { id: 'cat',         label: 'Pets',        accent: 'var(--c-cat)',         defaultMode: 'recurring' },
   { id: 'family',      label: 'Family',      accent: 'var(--c-family)',      defaultMode: 'age' },
   { id: 'other',       label: 'Other',       accent: 'var(--c-other)',       defaultMode: 'countdown' },
 ];

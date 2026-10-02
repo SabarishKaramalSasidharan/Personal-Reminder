@@ -28,6 +28,12 @@ _None yet._
 
 ## Iterations
 
+### 2026-10-02 — "Pet health" renamed to "Pets"; new baby icon
+- Request (Sabarish): rename the Pet health category to Pets, and change the baby category's icon.
+- Category label only; internal id (`cat`) and accent color unchanged, so existing entries aren't affected.
+- Baby icon: swapped the bottle glyph for a pacifier (ring + shield + tip), filled for clarity at small sizes. Verified at both the 25px card-badge size and the 16px category-chip size before shipping — chip size is where thin-stroke icons degrade first (same lesson as the settings-gear fix).
+- Asset versions bumped to v13; SW cache to v13.
+
 ### 2026-10-02 — Notifications (local-only) + persistent storage
 - Request (Sabarish): make sure data is saved on the phone, and add notifications to nudge before dates.
 - **Decision:** offered a fork — (A) no-backend, local-only nudges that only fire while the app is opened, vs (B) true background push, which needs a server to decide when to send and would mean dates leave the device. Sabarish chose **(A)**, keeping the "nothing is uploaded" privacy promise intact.
